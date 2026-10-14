@@ -1,3 +1,18 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="세무사 1차 시험 기출 479문항(2023·2024·2025) 과목·단원별 문제풀이">
+<meta name="color-scheme" content="light dark">
+<meta name="format-detection" content="telephone=no">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  img{max-width:100%}
+</style>
+</head>
+<body>
 <title>세무사 1차 스터디</title>
 <style>
   @media (prefers-reduced-motion: reduce) {
@@ -340,6 +355,43 @@
     border-top: 1px solid var(--paper-line);
     padding-top: 14px;
   }
+  /* ---- 모바일 최적화 (휴대폰에서 문제 풀기) ---- */
+  @media (max-width: 620px) {
+    .wrap { padding: 16px 13px 56px; }
+    .letterhead { gap: 12px; padding-bottom: 14px; margin-bottom: 16px; }
+    .letterhead h1 { font-size: 19px; }
+    .letterhead p { font-size: 12px; }
+    .seal { width: 42px; height: 42px; font-size: 11px; }
+    .sync-pill { display: none; }
+
+    /* 과목 탭: 한 줄 가로 스크롤 */
+    .top-subjects { flex-wrap: nowrap; overflow-x: auto; gap: 7px; margin-bottom: 10px; }
+    .top-subjects::-webkit-scrollbar { display: none; }
+    .top-subject-pill { flex: none; font-size: 14px; padding: 9px 14px; white-space: nowrap; }
+
+    /* 단원 바: 여러 줄로 쌓이면 화면을 다 먹으므로 한 줄 가로 스크롤로 */
+    .units {
+      flex-wrap: nowrap; overflow-x: auto; gap: 6px;
+      margin-bottom: 14px; padding-bottom: 3px;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .units::-webkit-scrollbar { display: none; }
+    .unit-pill { flex: none; white-space: nowrap; font-size: 13px; padding: 8px 13px; }
+
+    .toolbar { gap: 8px; margin-bottom: 14px; }
+    .tab-btn { padding: 9px 13px; font-size: 13px; }
+    .score-box b { font-size: 18px; }
+
+    /* 문제 카드: 여백 줄이고 글자 키움 */
+    .card { padding: 18px 16px 16px; }
+    .stem { font-size: 16px; line-height: 1.72; margin-bottom: 16px; }
+    .choice { padding: 14px 13px; gap: 9px; font-size: 15px; line-height: 1.6; }
+
+    /* 문항 번호 버튼: 터치하기 좋게 확대 */
+    .rail-grid { grid-template-columns: repeat(5, 40px); gap: 7px; }
+    .q-chip { font-size: 13px; }
+  }
+
 </style>
 
 <div class="wrap">
@@ -3460,3 +3512,6 @@
   }
 })();
 </script>
+
+</body>
+</html>
