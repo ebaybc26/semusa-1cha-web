@@ -392,6 +392,26 @@
     .q-chip { font-size: 13px; }
   }
 
+  /* ---- 단원순 정렬일 때 레일 ---- */
+  :root[data-sort="unit"] .board { grid-template-columns: 138px 1fr; }
+  :root[data-sort="unit"] .rail-grid { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  :root[data-sort="unit"] .q-chip {
+    aspect-ratio: auto; padding: 7px 2px; font-size: 11px; letter-spacing: -0.02em;
+  }
+  :root[data-sort="unit"] .rail-year {
+    white-space: normal; line-height: 1.35; font-size: 10.5px;
+    margin-bottom: 5px; word-break: keep-all;
+  }
+  :root[data-sort="unit"] .rail-group { margin-bottom: 2px; }
+  @media (max-width: 620px) {
+    :root[data-sort="unit"] .board { grid-template-columns: 1fr; }
+    :root[data-sort="unit"] .rail-grid { grid-template-columns: repeat(3, 58px); gap: 6px; }
+    :root[data-sort="unit"] .q-chip { font-size: 12px; padding: 9px 2px; }
+    :root[data-sort="unit"] .rail-year { font-size: 11px; max-width: 186px; }
+    /* 정렬 토글은 모바일에서도 보이게 */
+    #sortTabs .tab-btn { padding: 9px 11px; font-size: 13px; }
+  }
+
 </style>
 
 <div class="wrap">
@@ -420,6 +440,10 @@
       <button class="tab-btn active" data-kind="all">전체</button>
       <button class="tab-btn" data-kind="concept">말문제</button>
       <button class="tab-btn" data-kind="calc">계산문제</button>
+    </div>
+    <div class="tabs" id="sortTabs">
+      <button class="tab-btn active" data-sort="year">연도순</button>
+      <button class="tab-btn" data-sort="unit">단원순</button>
     </div>
     <div class="score-box"><b id="scoreNum">0 / 12</b><span>채점 완료</span></div>
   </div>
@@ -3114,7 +3138,8 @@
     answers: {}, mode: "all", kind: "all", currentIndex: 0,
     topSubject: initialTopSubject,
     subject: initialLaws.length ? initialLaws[0] : initialTopSubject,
-    unit: "all"
+    unit: "all",
+    sort: "year"
   };
   var STORAGE_KEY = "semusa_study_v1";
 
@@ -3126,12 +3151,15 @@
         if (parsed && typeof parsed === "object" && parsed.answers) {
           state.answers = parsed.answers;
         }
+        if (parsed && (parsed.sort === "year" || parsed.sort === "unit")) {
+          state.sort = parsed.sort;
+        }
       }
     } catch (e) { /* ignore */ }
   }
   function saveLocal() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: state.answers }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: state.answers, sort: state.sort }));
     } catch (e) { /* ignore */ }
   }
 
@@ -3222,9 +3250,33 @@
   function visibleList() {
     var base = subjectList();
     if (state.mode === "wrong") {
-      return base.filter(function (q) { return isAnswered(q) && !isCorrect(q); });
+      base = base.filter(function (q) { return isAnswered(q) && !isCorrect(q); });
+    }
+    if (state.sort === "unit") {
+      // 한 단원을 3개년 통째로 이어서 풀 수 있도록 단원 -> 연도 -> 번호 순으로 정렬
+      var order = unitsOf(state.topSubject, state.subject);
+      base = base.slice().sort(function (a, b) {
+        var ua = order.indexOf(a.unit), ub = order.indexOf(b.unit);
+        if (ua !== ub) return ua - ub;
+        if (a.year !== b.year) return a.year - b.year;
+        return a.no - b.no;
+      });
     }
     return base;
+  }
+
+  /* 현재 정렬 기준에 따라 레일을 묶을 그룹 키 목록과 분류 함수 */
+  function railGroups(list) {
+    if (state.sort === "unit") {
+      var seen = [];
+      list.forEach(function (q) { if (seen.indexOf(q.unit) === -1) seen.push(q.unit); });
+      return seen.map(function (u) {
+        return { label: u, items: list.filter(function (q) { return q.unit === u; }) };
+      });
+    }
+    return [2023, 2024, 2025].map(function (y) {
+      return { label: y + "년", items: list.filter(function (q) { return q.year === y; }) };
+    });
   }
 
   function scoreFor(topSubject, law, unit) {
@@ -3347,28 +3399,29 @@
   function renderRail() {
     var rail = document.getElementById("rail");
     rail.innerHTML = "";
-    var years = [2023, 2024, 2025];
     var list = visibleList();
-    years.forEach(function (year) {
-      var items = list.filter(function (q) { return q.year === year; });
-      if (!items.length) return;
+    rail.setAttribute("data-sort", state.sort);
+    document.documentElement.setAttribute("data-sort", state.sort);
+    railGroups(list).forEach(function (g) {
+      if (!g.items.length) return;
       var group = document.createElement("div");
       group.className = "rail-group";
       var label = document.createElement("div");
       label.className = "rail-year";
-      label.textContent = year + "년";
+      label.textContent = g.label;
+      label.title = g.label;
       group.appendChild(label);
       var grid = document.createElement("div");
       grid.className = "rail-grid";
-      items.forEach(function (q) {
+      g.items.forEach(function (q) {
         var btn = document.createElement("button");
         var cls = "q-chip";
-        var idx = visibleList().indexOf(q);
-        if (idx === state.currentIndex) cls += " current";
+        if (list.indexOf(q) === state.currentIndex) cls += " current";
         if (isAnswered(q)) cls += isCorrect(q) ? " correct" : " wrong";
         btn.className = cls;
-        btn.textContent = q.no;
-        btn.title = q.year + "년 " + q.no + "번";
+        // 단원순일 때는 연도가 섞이므로 칩에 연도 끝 2자리를 함께 표시
+        btn.textContent = state.sort === "unit" ? (String(q.year).slice(2) + "-" + q.no) : q.no;
+        btn.title = q.year + "년 " + q.no + "번 · " + q.unit;
         btn.addEventListener("click", function () {
           state.currentIndex = visibleList().indexOf(q);
           renderAll();
@@ -3503,7 +3556,21 @@
     });
   });
 
+  document.querySelectorAll("[data-sort]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll("[data-sort]").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      state.sort = btn.getAttribute("data-sort");
+      state.currentIndex = 0;
+      saveLocal();
+      renderAll();
+    });
+  });
+
   loadLocal();
+  document.querySelectorAll("[data-sort]").forEach(function (b) {
+    b.classList.toggle("active", b.getAttribute("data-sort") === state.sort);
+  });
   renderAll();
   if (window.claude && typeof window.claude.use === "function") {
     initSync();
