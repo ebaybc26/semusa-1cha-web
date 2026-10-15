@@ -456,6 +456,7 @@
     font-size: 13.5px;
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   }
+  .batch-summary[hidden] { display: none; }
   .batch-summary.all-ok { border-color: var(--jade); background: var(--jade-soft); }
   .batch-summary b { font-family: var(--serif); }
   .link-btn {
@@ -470,6 +471,16 @@
     .batch-summary { font-size: 13px; margin-bottom: 12px; }
   }
 
+  /* ---- 함정문제 ---- */
+  .tag.badge-trap { color: var(--vermillion); border-color: var(--vermillion); background: var(--vermillion-soft); font-weight: 600; }
+  .trap-note {
+    margin-top: 10px; padding: 12px 14px; border-radius: 2px;
+    border: 1px dashed var(--vermillion); background: var(--vermillion-soft);
+    font-size: 13.5px; line-height: 1.75;
+  }
+  .trap-note b { font-family: var(--serif); display: inline-block; margin-bottom: 4px; }
+  @media (max-width: 620px) { .trap-note { font-size: 13px; } }
+
 </style>
 
 <div class="wrap">
@@ -477,7 +488,7 @@
     <div class="seal">모의</div>
     <div>
       <h1>세무사 1차 스터디</h1>
-      <p>2023·2024·2025년 기출 · 2026년 개정세법 반영 검토</p>
+      <p>2016~2025년 기출 · 공식정답 전수 대조 · 2026년 개정세법 반영 검토</p>
     </div>
     <div class="sync-pill" id="syncPill" data-live="0">
       <span class="sync-dot"></span>
@@ -493,6 +504,8 @@
     <div class="tabs">
       <button class="tab-btn active" data-mode="all">전체 풀기</button>
       <button class="tab-btn" data-mode="wrong">오답노트</button>
+    
+      <button class="tab-btn" data-mode="trap">함정문제</button>
     </div>
     <div class="tabs" id="kindTabs">
       <button class="tab-btn active" data-kind="all">전체</button>
@@ -3181,7 +3194,7 @@
 { id:"2022-59", subject:"세법학개론", year:2022, no:59, law:"소득세법", unit:"사업소득", kind:"concept",
   stem:"소득세법령상 사업소득의 수입시기에 관한 설명으로 옳지 않은 것은?",
   choices:["제품의 판매: 그 제품을 인도한 날","제품의 위탁판매: 수탁자가 그 위탁품을 판매한 날","무인판매기에 의한 판매: 당해 사업자가 무인판매기에서 현금을 인출하는 때","한국표준산업분류상의 금융보험업에서 발생하는 이자: 결산을 확정할 때 이자를 수익으로 계상한 날","어음의 할인: 그 어음의 만기일로 하되, 만기 전에 그 어음을 양도하는 때에는 그 양도일"],
-  answer:4, status:"clear", note:"" },
+  answer:4, trap:3, status:"clear", note:"" },
 { id:"2022-60", subject:"세법학개론", year:2022, no:60, law:"소득세법", unit:"퇴직소득세", kind:"concept",
   stem:"소득세법령상 퇴직소득에 관한 설명으로 옳은 것은?",
   choices:["종교관련종사자가 현실적인 퇴직을 원인으로 종교단체로부터 지급받는 소득은 퇴직소득에 해당한다.","「과학기술인공제회법」제16조제1항제3호에 따라 지급받는 과학기술발전장려금은 퇴직소득에 해당하지 않는다.","계속근로기간 중에 「근로자퇴직급여보장법」에 따라 퇴직연금제도가 폐지되어 퇴직급여를 미리 지급받는 경우에도 그 지급받은 날에 퇴직한 것으로 보지 않는다.","거주자의 퇴직소득금액에 국외원천소득이 합산되어 있는 경우로서 외국에서 납부한 외국소득세액이 퇴직소득산출세액에서 공제할 수 있는 한도금액을 초과하는 경우 그 초과하는 금액은 이월공제기간으로 이월하여 그 이월된 과세기간의 공제한도금액 내에서 공제받을 수 있다.","「국민연금법」에 따라 받는 일시금으로써 2001년 12월 31일 이전에 납입된 연금 기여금 및 사용자부담금을 기초로 하여 받은 일시금은 퇴직소득에 해당한다."],
@@ -3213,7 +3226,7 @@
 { id:"2022-67", subject:"세법학개론", year:2022, no:67, law:"법인세법", unit:"세무조정과 소득처분", kind:"calc",
   stem:"한국채택국제회계기준을 적용하고 있는 영리내국법인 (주)A의 제22기 사업연도(2022.1.1.~12.31.)의 소득금액조정합계표상 손금산입 및 익금불산입 항목의 합계금액은? [단, 각 항목은 독립적이며 주어진 자료 이외(수입배당금 익금불산입 규정 포함)에는 고려하지 않음]\n\n(1) (주)A의 재무상태표 자산계정 중 매출채권은 150,000,000원이다. 이 금액에는 당기에 상법에 따른 소멸시효가 완성된 매출채권 2,000,000원이 포함되어 있다.\n(2) (주)A는 제22기에 토지를 100,000,000원에 매입하였는데 이에 대한 취득세 4,000,000원과 그 취득세에 관한 가산세 1,000,000원을 납부하고 다음과 같이 회계처리하였다.\n  (차) 토지 105,000,000원   (대) 현금 105,000,000원\n(3) (주)A는 2022년 초 (주)B의 의결권 있는 주식 30%를 30,000,000원에 취득하였다. 주식 취득일 현재 (주)B의 재무상태표상 순자산가액은 100,000,000원이고 순자산가액은 공정가치와 일치하였다. (주)A는 2022.5.18. (주)B로부터 현금배당 500,000원을 받았으며, 2022년 말 (주)B가 당기순이익을 보고함에 따라 다음과 같이 회계처리하였다.\n  <2022.5.18.> (차) 현금 500,000원   (대) 관계기업투자주식 500,000원\n  <2022.12.31.> (차) 관계기업투자주식 2,000,000원   (대) 지분법이익 2,000,000원",
   choices:["3,000,000원","5,000,000원","5,500,000원","7,000,000원","7,500,000원"],
-  answer:2, status:"clear", note:"" },
+  answer:2, trap:3, status:"clear", note:"" },
 { id:"2022-68", subject:"세법학개론", year:2022, no:68, law:"법인세법", unit:"감가상각비", kind:"calc",
   stem:"다음은 법인세가 감면되는 사업을 영위하는 영리내국법인 (주)A의 제22기 사업연도(2022.1.1.~12.31.) 기계장치와 관련된 자료이다. (주)A의 제22기 감가상각비 손금불산입액은? (단, (주)A는 매년 법인세를 감면받아 왔고, 계산결과는 원 단위 미만에서 절사하고 주어진 자료 이외에는 고려하지 않음)\n\n(1) 취득일: 2020.1.1.\n(2) 취득가액: 50,000,000원\n구분 / 제20기(2020.1.1.~12.31.) / 제21기(2021.1.1.~12.31.) / 제22기(2022.1.1.~12.31.)\n감가상각비 장부금액 / 20,000,000원 / 0원 / 8,000,000원\n(3) 기계장치에 대한 감가상각방법과 적용 내용연수를 신고한 바 없다.\n(4) 기준내용연수: 10년\n(5) 내용연수 10년의 감가상각률 — 정액법 0.100 / 정률법 0.259\n(6) 제20기와 제21기의 세무조정은 적정하게 이루어졌다.",
   choices:["889,402원","902,352원","1,804,402원","2,696,352원","2,980,402원"],
@@ -3221,7 +3234,7 @@
 { id:"2022-69", subject:"세법학개론", year:2022, no:69, law:"법인세법", unit:"손금과 손금불산입", kind:"concept",
   stem:"법인세법령상 접대비와 기부금에 관한 설명으로 옳지 않은 것은?",
   choices:["법인이 기부금의 지출을 위하여 어음을 발행한 경우에는 그 어음을 발행한 날에 지출한 것으로 본다.","법인이 기부금을 가지급금 등으로 이연계상한 경우에는 이를 그 지출한 사업연도의 기부금으로 하고 그 후의 사업연도에는 이를 기부금으로 보지 않는다.","내국법인이 한 차례의 접대에 지출한 접대비 중 3만원(경조금은 20만원)을 초과하는 접대비로서 증명서류를 수취하지 않은 것은 전액 손금불산입하고 대표자에 대한 상여로 처분한다.","재화 또는 용역을 공급하는 신용카드 등의 가맹점이 아닌 다른 가맹점의 명의로 작성된 매출전표 등을 발급받은 경우 해당 지출액은 신용카드 등을 사용하여 지출한 접대비로 보지 않는다.","법인이 특수관계인 외의 자에게 정당한 사유 없이 자산을 정상가액보다 낮은 가액으로 양도함으로써 실질적으로 증여한 것으로 인정되는 금액은 기부금으로 본다."],
-  answer:1, status:"clear", note:"" },
+  answer:1, trap:3, status:"clear", note:"" },
 { id:"2022-70", subject:"세법학개론", year:2022, no:70, law:"법인세법", unit:"손익의 귀속시기", kind:"concept",
   stem:"법인세법령상 손익의 귀속사업연도 및 자산ㆍ부채의 평가에 관한 설명으로 옳지 않은 것은?",
   choices:["중소기업인 법인이 수행하는 계약기간 1년 미만인 건설등의 경우에는 그에 대한 수익과 비용을 각각 그 목적물의 인도일이 속하는 사업연도의 익금과 손금에 산입할 수 있다.","「특정 금융거래정보의 보고 및 이용 등에 관한 법률」 제2조제3호에 따른 가상자산은 이동평균법에 따라 평가해야 한다.","결산을 확정할 때 이미 경과한 기간에 대응하는 임대료 상당액과 이에 대응하는 비용을 해당 사업연도의 수익과 손비로 계상한 경우 및 임대료 지급기간이 1년을 초과하는 경우 이미 경과한 기간에 대응하는 임대료 상당액과 비용은 이를 각각 해당 사업연도의 익금과 손금으로 한다.","투자회사 등이 결산을 확정할 때 증권 등의 투자와 관련된 수익 중 이미 경과한 기간에 대응하는 이자 및 할인액과 배당소득을 해당 사업연도의 수익으로 계상한 경우에는 그 계상한 사업연도의 익금으로 한다.","계약의 목적물을 인도하지 않고 목적물의 가액 변동에 따른 차액을 금전으로 정산하는 파생상품의 거래로 인한 손익은 그 거래에서 정하는 대금결제일이 속하는 사업연도의 익금과 손금으로 한다."],
@@ -3260,6 +3273,17 @@
   answer:5, status:"clear", note:"" }
   ];
 
+  var TRAP_NOTE = {
+    "2022-59": "③ 무인판매기 판매의 수입시기를 '현금을 인출하는 때'로 본 것은 소득세법 시행령상 맞는 내용이라 정답이 아니다. ④ 금융보험업의 이자는 '실제로 수입된 날'이 수입시기인데, 법인세법의 '결산 확정 시 수익 계상한 날' 규칙과 혼동하기 쉽다. 소득세법과 법인세법의 규칙 차이가 함정.",
+    "2022-67": "소멸시효 완성 매출채권·토지 취득세 가산세·지분법이익 세 항목을 각각 손금산입/익금불산입 중 어디로 보낼지에서 갈린다. 취득세 가산세는 손금불산입 항목이라 손금산입 쪽에 넣으면 안 된다.",
+    "2022-69": "① 기부금을 어음으로 지출한 경우는 '어음을 발행한 날'이 아니라 '어음이 실제로 결제된 날'에 지출한 것으로 본다. ③ 3만원(경조금 20만원) 초과 증빙 미수취 접대비를 손금불산입하고 대표자 상여 처분하는 것은 맞는 내용이라 정답이 아니다. 어음·수표의 지출시기 규칙이 기부금과 접대비에서 각각 다른 점이 함정."
+  };
+  /* 시험 회차: 2016년 제53회부터 매년 1씩 증가 */
+  var ROUND_OF = (function () {
+    var m = {};
+    for (var y = 2016; y <= 2035; y++) m[y] = String(y - 1963);
+    return m;
+  })();
   var STATUS_LABEL = { clear: "개정영향 없음", note: "참고사항 있음", revised: "2027 개정판" };
   var KIND_LABEL = { concept: "말문제", calc: "계산문제" };
 
@@ -3439,6 +3463,8 @@
     var base = subjectList();
     if (state.mode === "wrong") {
       base = base.filter(function (q) { return isAnswered(q) && !isCorrect(q); });
+    } else if (state.mode === "trap") {
+      base = base.filter(function (q) { return q.trap !== undefined; });
     }
     if (state.sort === "unit") {
       // 한 단원을 3개년 통째로 이어서 풀 수 있도록 단원 -> 연도 -> 번호 순으로 정렬
@@ -3462,7 +3488,10 @@
         return { label: u, items: list.filter(function (q) { return q.unit === u; }) };
       });
     }
-    return [2023, 2024, 2025].map(function (y) {
+    var years = [];
+    list.forEach(function (q) { if (years.indexOf(q.year) === -1) years.push(q.year); });
+    years.sort(function (a, b) { return a - b; });
+    return years.map(function (y) {
       return { label: y + "년", items: list.filter(function (q) { return q.year === y; }) };
     });
   }
@@ -3632,7 +3661,9 @@
     if (!list.length) {
       var empty = document.createElement("div");
       empty.className = "card empty-state";
-      empty.textContent = "오답노트가 비어 있어요. 틀린 문제가 생기면 여기 쌓여요.";
+      empty.textContent = state.mode === "trap"
+        ? "이 과목·단원에는 함정문제로 표시된 문항이 없어요."
+        : "오답노트가 비어 있어요. 틀린 문제가 생기면 여기 쌓여요.";
       panel.appendChild(empty);
       return;
     }
@@ -3647,10 +3678,11 @@
     meta.className = "card-meta";
     var kind = q.kind || "concept";
     meta.innerHTML =
-      '<span class="qno">' + q.year + "년 제" + (q.year === 2023 ? "60" : q.year === 2024 ? "61" : "62") + "회 · " + q.no + "번</span>" +
+      '<span class="qno">' + q.year + "년 제" + ROUND_OF[q.year] + "회 · " + q.no + "번</span>" +
       '<span class="tag law">' + q.law + "</span>" +
       '<span class="tag">' + KIND_LABEL[kind] + "</span>" +
-      '<span class="tag badge-' + q.status + '">' + STATUS_LABEL[q.status] + "</span>";
+      '<span class="tag badge-' + q.status + '">' + STATUS_LABEL[q.status] + "</span>" +
+      (q.trap !== undefined ? '<span class="tag badge-trap">함정 · ' + choiceLabel(q.trap - 1) + '로 틀리기 쉬움</span>' : "");
     card.appendChild(meta);
 
     var stem = document.createElement("p");
@@ -3693,6 +3725,12 @@
         "<b>" + (ok ? "정답입니다" : "오답입니다") + "</b> — 공식정답 " + officialAnswerLabel(q) + "번" +
         (q.note ? '<br><span class="note-label">개정 검토</span> ' + q.note : "");
       card.appendChild(result);
+      if (q.trap !== undefined && TRAP_NOTE[q.id]) {
+        var tw = document.createElement("div");
+        tw.className = "trap-note";
+        tw.innerHTML = '<b>왜 ' + choiceLabel(q.trap - 1) + '로 틀리기 쉬운가</b><br>' + TRAP_NOTE[q.id];
+        card.appendChild(tw);
+      }
     } else {
       var submitRow = document.createElement("div");
       submitRow.className = "submit-row";
