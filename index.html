@@ -412,6 +412,64 @@
     #sortTabs .tab-btn { padding: 9px 11px; font-size: 13px; }
   }
 
+  /* ---- 제출 방식 채점 ---- */
+  .choice.picked {
+    border-color: var(--ink);
+    background: var(--brass-soft);
+    font-weight: 600;
+  }
+  .choice.picked .num { color: var(--ink); }
+
+  .submit-row { margin-top: 16px; display: flex; justify-content: flex-end; }
+  .submit-btn {
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--serif);
+    font-size: 15px;
+    padding: 11px 30px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .submit-btn:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
+  .submit-btn[disabled] {
+    background: transparent; color: var(--ink-soft);
+    border-color: var(--paper-line); cursor: default; font-weight: 400;
+  }
+
+  .submit-all {
+    border: 1px solid var(--brass);
+    background: var(--brass-soft);
+    color: var(--ink);
+    font-size: 13px; font-weight: 600;
+    padding: 8px 14px; border-radius: 2px; cursor: pointer;
+    white-space: nowrap;
+  }
+  .submit-all:hover { border-color: var(--ink); }
+
+  .batch-summary {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--vermillion);
+    background: var(--vermillion-soft);
+    border-radius: 2px;
+    font-size: 13.5px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .batch-summary.all-ok { border-color: var(--jade); background: var(--jade-soft); }
+  .batch-summary b { font-family: var(--serif); }
+  .link-btn {
+    border: 1px solid currentColor; background: transparent; color: inherit;
+    font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  }
+
+  @media (max-width: 620px) {
+    .submit-row { justify-content: stretch; }
+    .submit-btn { width: 100%; padding: 14px; font-size: 16px; }
+    .submit-all { padding: 9px 12px; font-size: 12.5px; }
+    .batch-summary { font-size: 13px; margin-bottom: 12px; }
+  }
+
 </style>
 
 <div class="wrap">
@@ -445,8 +503,11 @@
       <button class="tab-btn active" data-sort="year">연도순</button>
       <button class="tab-btn" data-sort="unit">단원순</button>
     </div>
+    <button class="submit-all" id="submitAll" hidden></button>
     <div class="score-box"><b id="scoreNum">0 / 12</b><span>채점 완료</span></div>
   </div>
+
+  <div class="batch-summary" id="batchSummary" hidden></div>
 
   <div class="board">
     <nav class="rail" id="rail"></nav>
@@ -3139,7 +3200,9 @@
     topSubject: initialTopSubject,
     subject: initialLaws.length ? initialLaws[0] : initialTopSubject,
     unit: "all",
-    sort: "year"
+    sort: "year",
+    picks: {},
+    lastBatch: null
   };
   var STORAGE_KEY = "semusa_study_v1";
 
@@ -3154,12 +3217,15 @@
         if (parsed && (parsed.sort === "year" || parsed.sort === "unit")) {
           state.sort = parsed.sort;
         }
+        if (parsed && parsed.picks && typeof parsed.picks === "object") {
+          state.picks = parsed.picks;
+        }
       }
     } catch (e) { /* ignore */ }
   }
   function saveLocal() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: state.answers, sort: state.sort }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: state.answers, sort: state.sort, picks: state.picks }));
     } catch (e) { /* ignore */ }
   }
 
@@ -3219,6 +3285,36 @@
 
   /* ---------------- derived ---------------- */
   function isAnswered(q) { return state.answers[q.id] !== undefined; }
+  function pickOf(q) { return state.picks[q.id]; }
+  /* 선택은 했지만 아직 제출(채점)하지 않은 문항 */
+  function pendingList() {
+    return visibleList().filter(function (q) { return !isAnswered(q) && pickOf(q) !== undefined; });
+  }
+  function submitOne(q) {
+    if (isAnswered(q) || pickOf(q) === undefined) return;
+    state.answers[q.id] = state.picks[q.id];
+    delete state.picks[q.id];
+    state.lastBatch = null;
+    persist();
+    renderAll();
+  }
+  function submitAll() {
+    var items = pendingList();
+    if (!items.length) return;
+    var correct = 0;
+    items.forEach(function (q) {
+      state.answers[q.id] = state.picks[q.id];
+      delete state.picks[q.id];
+      if (correctSet(q).indexOf(state.answers[q.id]) !== -1) correct++;
+    });
+    state.lastBatch = { total: items.length, correct: correct };
+    persist();
+    renderAll();
+  }
+  /* 공식정답 표기 (복수정답이면 ①·④ 처럼 모두 표시) */
+  function officialAnswerLabel(q) {
+    return correctSet(q).map(function (n) { return choiceLabel(n - 1); }).join("·");
+  }
   function correctSet(q) { return Array.isArray(q.answer) ? q.answer : [q.answer]; }
   function isCorrect(q) { return correctSet(q).indexOf(state.answers[q.id]) !== -1; }
 
@@ -3481,12 +3577,16 @@
         if (correctSet(q).indexOf(idx) !== -1) cls += " reveal-correct";
         else if (idx === state.answers[q.id]) cls += " reveal-wrong";
       }
+      if (!answered && pickOf(q) === idx) cls += " picked";
       btn.className = cls;
       btn.disabled = answered;
       btn.innerHTML = '<span class="num">' + choiceLabel(i) + "</span><span>" + text.replace(/\n/g, "<br>") + "</span>";
       btn.addEventListener("click", function () {
-        state.answers[q.id] = idx;
-        persist();
+        if (isAnswered(q)) return;
+        if (state.picks[q.id] === idx) delete state.picks[q.id];
+        else state.picks[q.id] = idx;
+        state.lastBatch = null;
+        saveLocal();
         renderAll();
       });
       choicesWrap.appendChild(btn);
@@ -3498,9 +3598,20 @@
       var result = document.createElement("div");
       result.className = "result-line " + (ok ? "ok" : "ng");
       result.innerHTML =
-        "<b>" + (ok ? "정답입니다" : "오답입니다") + "</b> — 공식정답 " + choiceLabel(q.answer - 1) + "번<br>" +
-        '<span class="note-label">개정 검토</span> ' + q.note;
+        "<b>" + (ok ? "정답입니다" : "오답입니다") + "</b> — 공식정답 " + officialAnswerLabel(q) + "번" +
+        (q.note ? '<br><span class="note-label">개정 검토</span> ' + q.note : "");
       card.appendChild(result);
+    } else {
+      var submitRow = document.createElement("div");
+      submitRow.className = "submit-row";
+      var sBtn = document.createElement("button");
+      sBtn.className = "submit-btn";
+      var hasPick = pickOf(q) !== undefined;
+      sBtn.textContent = hasPick ? "제출" : "보기를 고르세요";
+      sBtn.disabled = !hasPick;
+      sBtn.addEventListener("click", function () { submitOne(q); });
+      submitRow.appendChild(sBtn);
+      card.appendChild(submitRow);
     }
 
     var nav = document.createElement("div");
@@ -3524,6 +3635,33 @@
 
   function renderScore() {
     document.getElementById("scoreNum").textContent = scoreText();
+
+    var sa = document.getElementById("submitAll");
+    var pending = pendingList().length;
+    sa.hidden = pending === 0;
+    sa.textContent = "전체 제출 (" + pending + "문항)";
+
+    var bs = document.getElementById("batchSummary");
+    if (state.lastBatch) {
+      var lb = state.lastBatch;
+      var wrong = lb.total - lb.correct;
+      bs.hidden = false;
+      bs.className = "batch-summary" + (wrong === 0 ? " all-ok" : "");
+      bs.innerHTML = "<b>" + lb.total + "문항 제출</b> — 정답 " + lb.correct + " · 오답 " + wrong +
+        (wrong ? ' <button class="link-btn" id="goWrong">오답만 보기</button>' : "");
+      var gw = document.getElementById("goWrong");
+      if (gw) gw.addEventListener("click", function () {
+        document.querySelectorAll("[data-mode]").forEach(function (b) { b.classList.remove("active"); });
+        var wb = document.querySelector('[data-mode="wrong"]');
+        if (wb) wb.classList.add("active");
+        state.mode = "wrong";
+        state.currentIndex = 0;
+        state.lastBatch = null;
+        renderAll();
+      });
+    } else {
+      bs.hidden = true;
+    }
   }
 
   function renderAll() {
@@ -3555,6 +3693,8 @@
       renderAll();
     });
   });
+
+  document.getElementById("submitAll").addEventListener("click", submitAll);
 
   document.querySelectorAll("[data-sort]").forEach(function (btn) {
     btn.addEventListener("click", function () {
