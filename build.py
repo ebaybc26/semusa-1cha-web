@@ -22,7 +22,7 @@ HEAD = '''<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="세무사 1차 시험 기출 740문항(2016~2025) 과목·단원별 문제풀이">
+<meta name="description" content="세무사 1차 시험 기출 900문항(2016~2025) 과목·단원별 문제풀이">
 <meta name="color-scheme" content="light dark">
 <meta name="format-detection" content="telephone=no">
 <style>
